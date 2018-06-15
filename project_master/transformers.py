@@ -23,32 +23,16 @@ class DummyEncoder(TransformerMixin):
     def transform(self, X, y=None, **kwargs):
 
         new_dummies = pd.get_dummies(X[self.column]) #get dummies of X
-        aligned = self.dummies_.align(with_dummies,
+        aligned = self.dummies_.align(new_dummies,
                                       join='left',
                                       axis=1,
                                       fill_value=0) #check with fit dummies
-        return pd.concat([X.drop(self.column,axis=1),aligned],axis=1)
+        return pd.concat([X.drop(self.column,axis=1), aligned[1]], axis=1)
 
     def fit(self, X, y=None, **kwargs):
-        self.dummies_ =  pd.get_dummies(X[column])
-        self.columns_ = list(self.dummies.columns)
+        self.dummies_ =  pd.get_dummies(X[self.column])
+        self.columns_ = list(self.dummies_.columns)
         return self
-
-"""
-class DummyEncoder(TransformerMixin):
-   #for one hot encoding a column from a df, in a pipeline, without having to split & featureunion
-
-    def __init__(self, columns=None):
-        self.columns = columns
-
-    def transform(self, X, y=None, **kwargs):
-        with_dummies = pd.get_dummies(X)
-        return with_dummies.T.reindex(self.columns).T.fillna(0).astype(int)
-
-    def fit(self, X, y=None, **kwargs):
-        self.columns = list(pd.get_dummies(X).columns)
-        return self
-"""
 
 class CVecTransformer(CountVectorizer):
     """
@@ -85,7 +69,7 @@ class ColumnSelector(TransformerMixin):
         """docstring"""
         if self.drop is False:
             return X[self.columns]
-        elif self.drop is not True:
+        else:
             return X.drop(self.columns,axis=1)
 
     def fit(self,X,y=None,**kwargs):
